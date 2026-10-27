@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #120A05;
+    color: #FBF5EC;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  /* Custom Amber Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #140A04;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #3D2716;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #CC6F00;
+  }
+}
+
+/* Glassmorphism & Specialty Glows */
+.glass-panel {
+  background: rgba(29, 18, 8, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(242, 169, 0, 0.15);
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(242, 169, 0, 0.4);
+  box-shadow: 0 8px 30px -10px rgba(242, 169, 0, 0.2);
+}
+
+.amber-gradient-text {
+  background: linear-gradient(135deg, #F9E6A8 0%, #F2A900 50%, #CC6F00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gold-border-glow {
+  box-shadow: 0 0 15px -3px rgba(242, 169, 0, 0.3);
+}
+
+/* Range slider custom styling */
+input[type="range"] {
+  accent-color: #F2A900;
+}
