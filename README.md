@@ -7,6 +7,8 @@
 
 ---
 
+VideoLink: https://drive.google.com/file/d/1ArpdlTKTDCXXjFfK32b0Q3GzSuf9kqfg/view?usp=sharing
+
 ## 🥐 1. Problem Statement
 
 Local bakeries and specialty cake studios face clear daily operational challenges:
