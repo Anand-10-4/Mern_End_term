@@ -1,473 +1,388 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('../models/User');
-const BatchLot = require('../models/BatchLot');
-const CuppingSession = require('../models/CuppingSession');
+const Product = require('../models/Product');
 const Order = require('../models/Order');
+const CustomCake = require('../models/CustomCake');
 const AuditLog = require('../models/AuditLog');
-const { generateLotHash, generateOrderNumber } = require('../utils/tokenHelper');
+const { generateOrderNumber } = require('../utils/tokenHelper');
+const { calculateCakePrice } = require('../utils/cakePricing');
 
 dotenv.config({ path: __dirname + '/../.env' });
 
 const seedData = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/amberroast_db';
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/goldencrust_db';
     await mongoose.connect(mongoUri);
     console.log(`[Seed] Connected to ${mongoUri}`);
 
-    // Clear existing collections
+    // Clean existing collections
     await User.deleteMany({});
-    await BatchLot.deleteMany({});
-    await CuppingSession.deleteMany({});
+    await Product.deleteMany({});
     await Order.deleteMany({});
+    await CustomCake.deleteMany({});
     await AuditLog.deleteMany({});
-    console.log('[Seed] Cleared existing database records.');
+    console.log('[Seed] Cleared existing database collections.');
 
     // 1. Create Users
-    const roasterKaffa = await User.create({
-      name: 'Marcus Vance',
-      email: 'roaster@amberroast.io',
+    const customer = await User.create({
+      name: 'Alice Miller',
+      email: 'customer@goldencrust.com',
       password: 'password123',
-      role: 'roaster',
-      company: 'Kaffa Highlands Micro-Roastery',
-      tier: 'Gold Reserve',
-      allocationQuotaKg: 3000,
-      badgeNumber: 'AR-ROAST-01',
+      role: 'customer',
+      phone: '+1 (555) 482-9102',
+      loyaltyPoints: 120, // $12 redeemable
+      address: {
+        street: '724 Blossom Hill Rd',
+        city: 'Sunnyvale',
+        state: 'CA',
+        postalCode: '94087',
+      },
     });
 
-    const roasterAntioquia = await User.create({
-      name: 'Sofia Restrepo',
-      email: 'sofia@antioquiacraft.com',
+    const baker = await User.create({
+      name: 'Chef Pierre Dubois',
+      email: 'baker@goldencrust.com',
       password: 'password123',
-      role: 'roaster',
-      company: 'Andean Estate Craft Labs',
-      tier: 'Silver',
-      allocationQuotaKg: 2000,
-      badgeNumber: 'AR-ROAST-02',
+      role: 'baker',
+      phone: '+1 (555) 901-3829',
+      loyaltyPoints: 50,
+      address: {
+        street: '12 Bakery Row, Suite 1',
+        city: 'Sunnyvale',
+        state: 'CA',
+        postalCode: '94086',
+      },
     });
 
-    const buyerGold = await User.create({
-      name: 'Julian Sterling',
-      email: 'buyer@amberroast.io',
-      password: 'password123',
-      role: 'buyer',
-      company: 'Sterling Specialty Cafe Collective',
-      tier: 'Gold Reserve',
-      allocationQuotaKg: 1500,
-      usedQuotaKg: 180,
-      badgeNumber: 'AR-BUYER-01',
-    });
-
-    const buyerSilver = await User.create({
-      name: 'Claire Dupont',
-      email: 'claire@lumierecoffee.com',
-      password: 'password123',
-      role: 'buyer',
-      company: 'Lumiere Artisan Espresso Bar',
-      tier: 'Silver',
-      allocationQuotaKg: 800,
-      usedQuotaKg: 95,
-      badgeNumber: 'AR-BUYER-02',
-    });
-
-    const qGrader = await User.create({
-      name: 'Dr. Aaron Chen, CQI',
-      email: 'qgrader@amberroast.io',
-      password: 'password123',
-      role: 'qgrader',
-      company: 'Sensory Guild of America (CQI #4092)',
-      tier: 'Gold Reserve',
-      allocationQuotaKg: 500,
-      badgeNumber: 'AR-QGRAD-01',
-    });
-
-    const adminUser = await User.create({
-      name: 'Anand Mohan (Lab Director)',
-      email: 'admin@amberroast.io',
+    const admin = await User.create({
+      name: 'Anand Mohan (General Manager)',
+      email: 'admin@goldencrust.com',
       password: 'password123',
       role: 'admin',
-      company: 'AmberRoast Headquarters Protocol',
-      tier: 'Gold Reserve',
-      allocationQuotaKg: 10000,
-      badgeNumber: 'AR-ADMIN-01',
-    });
-
-    console.log('[Seed] Created Users (Roasters, Buyers, Q-Grader, Admin).');
-
-    // 2. Create Batch Lots
-    const lot1 = await BatchLot.create({
-      lotNumber: 'LOT-ETH-2026-081',
-      name: 'Yirgacheffe Gedeb Gesha Natural',
-      origin: {
-        country: 'Ethiopia',
-        region: 'Gedeb, Gedeo Zone',
-        estate: 'Banko Gotiti Micro-Station',
-        altitudeMeters: 2150,
-        varietal: 'Gesha 1931 Heirloom',
-        processMethod: 'Natural',
-      },
-      roaster: roasterKaffa._id,
-      roastProfile: 'Light Cinnamon',
-      greenWeightKg: 120,
-      roastedWeightKg: 103,
-      availableKg: 68,
-      allocatedKg: 35,
-      pricePerKg: 46.5,
-      moistureContentPercent: 10.4,
-      densityGramsPerLiter: 725,
-      defectCount: 0,
-      scaScore: 89.25,
-      scaClassification: 'Excellent Specialty (85-89.99)',
-      cuppingScores: {
-        fragrance: 9.0,
-        flavor: 9.0,
-        aftertaste: 8.75,
-        acidity: 9.0,
-        body: 8.5,
-        balance: 8.75,
-        uniformity: 10.0,
-        cleanCup: 10.0,
-        sweetness: 10.0,
-        overall: 8.75,
-      },
-      flavorNotes: ['Wild Bergamot', 'Jasmine Flower', 'Ripe Apricot', 'Golden Honeycomb'],
-      certifications: ['Direct Trade Organic', 'Highland Shade Grown', 'CQI Certified'],
-      story: 'Cultivated in volcanic red clay soil at over 2,100m. Dried on raised African bamboo beds for 24 days with continuous hand sorting.',
-      qrHash: generateLotHash({ lotNumber: 'LOT-ETH-2026-081', scaScore: 89.25, origin: { country: 'Ethiopia' } }),
-      status: 'approved',
-    });
-
-    const lot2 = await BatchLot.create({
-      lotNumber: 'LOT-PAN-2026-014',
-      name: 'Boquete Volcan Baru Anaerobic Slow Dry',
-      origin: {
-        country: 'Panama',
-        region: 'Boquete, Chiriqui',
-        estate: 'Hacienda La Esmeralda Jaramillo',
-        altitudeMeters: 1900,
-        varietal: 'Green Tip Gesha',
-        processMethod: 'Anaerobic Slow Dry',
-      },
-      roaster: roasterKaffa._id,
-      roastProfile: 'Nordic Filter',
-      greenWeightKg: 80,
-      roastedWeightKg: 68.5,
-      availableKg: 38.5,
-      allocatedKg: 30,
-      pricePerKg: 78.0,
-      moistureContentPercent: 10.1,
-      densityGramsPerLiter: 740,
-      defectCount: 0,
-      scaScore: 92.5,
-      scaClassification: 'Presidential Exemplar (90-100)',
-      cuppingScores: {
-        fragrance: 9.5,
-        flavor: 9.25,
-        aftertaste: 9.0,
-        acidity: 9.5,
-        body: 8.75,
-        balance: 9.0,
-        uniformity: 10.0,
-        cleanCup: 10.0,
-        sweetness: 10.0,
-        overall: 9.5,
-      },
-      flavorNotes: ['Champagne Mango', 'Candied Meyer Lemon', 'Orange Blossom', 'White Tea'],
-      certifications: ['Micro-Lot Auction Grade', 'Carbon Neutral Estate', 'Direct Trade'],
-      story: 'Fermented in stainless steel bio-reactors for 96 hours under nitrogen displacement, followed by shaded parabolic drying.',
-      qrHash: generateLotHash({ lotNumber: 'LOT-PAN-2026-014', scaScore: 92.5, origin: { country: 'Panama' } }),
-      status: 'approved',
-    });
-
-    const lot3 = await BatchLot.create({
-      lotNumber: 'LOT-COL-2026-039',
-      name: 'Huila San Adolfo Pink Bourbon Washed',
-      origin: {
-        country: 'Colombia',
-        region: 'Acevedo, Southern Huila',
-        estate: 'Finca El Paraiso',
-        altitudeMeters: 1780,
-        varietal: 'Pink Bourbon',
-        processMethod: 'Washed',
-      },
-      roaster: roasterAntioquia._id,
-      roastProfile: 'Medium City+',
-      greenWeightKg: 150,
-      roastedWeightKg: 129,
-      availableKg: 89,
-      allocatedKg: 40,
-      pricePerKg: 34.0,
-      moistureContentPercent: 11.2,
-      densityGramsPerLiter: 715,
-      defectCount: 1,
-      scaScore: 87.0,
-      scaClassification: 'Excellent Specialty (85-89.99)',
-      cuppingScores: {
-        fragrance: 8.75,
-        flavor: 8.75,
-        aftertaste: 8.5,
-        acidity: 8.75,
-        body: 8.5,
-        balance: 8.5,
-        uniformity: 10.0,
-        cleanCup: 10.0,
-        sweetness: 10.0,
-        overall: 8.5,
-      },
-      flavorNotes: ['Pink Guava', 'Blood Orange', 'Brown Sugar Caramel', 'Dark Cocoa'],
-      certifications: ['Rainforest Alliance', 'Single Producer Traceability'],
-      story: 'Submerged cold fermentation for 36 hours before parchment washing with pristine Andean mountain spring water.',
-      qrHash: generateLotHash({ lotNumber: 'LOT-COL-2026-039', scaScore: 87.0, origin: { country: 'Colombia' } }),
-      status: 'approved',
-    });
-
-    const lot4 = await BatchLot.create({
-      lotNumber: 'LOT-KEN-2026-092',
-      name: 'Nyeri Hill AB Phosphoric Double Wash',
-      origin: {
-        country: 'Kenya',
-        region: 'Nyeri County, Mount Kenya Slopes',
-        estate: 'Gikanda Farmers Cooperative',
-        altitudeMeters: 1850,
-        varietal: 'SL-28 & SL-34',
-        processMethod: 'Washed',
-      },
-      roaster: roasterKaffa._id,
-      roastProfile: 'Light Cinnamon',
-      greenWeightKg: 100,
-      roastedWeightKg: 85.5,
-      availableKg: 55.5,
-      allocatedKg: 30,
-      pricePerKg: 42.0,
-      moistureContentPercent: 10.6,
-      densityGramsPerLiter: 735,
-      defectCount: 0,
-      scaScore: 88.5,
-      scaClassification: 'Excellent Specialty (85-89.99)',
-      cuppingScores: {
-        fragrance: 8.75,
-        flavor: 9.0,
-        aftertaste: 8.75,
-        acidity: 9.25,
-        body: 8.5,
-        balance: 8.75,
-        uniformity: 10.0,
-        cleanCup: 10.0,
-        sweetness: 10.0,
-        overall: 8.75,
-      },
-      flavorNotes: ['Blackcurrant', 'Ruby Red Grapefruit', 'Hibiscus', 'Molasses'],
-      certifications: ['Fair Trade Certified', 'Cooperativa Direct Reserve'],
-      story: 'Traditional Kenyan 72-hour double fermentation with post-soak in clean spring channels, giving unmatched phosphoric vibrance.',
-      qrHash: generateLotHash({ lotNumber: 'LOT-KEN-2026-092', scaScore: 88.5, origin: { country: 'Kenya' } }),
-      status: 'approved',
-    });
-
-    const lot5 = await BatchLot.create({
-      lotNumber: 'LOT-CRI-2026-057',
-      name: 'Tarrazu Black Honey Micro-Lot',
-      origin: {
-        country: 'Costa Rica',
-        region: 'Tarrazu Valley, San Jose',
-        estate: 'Finca La Pastora',
-        altitudeMeters: 1650,
-        varietal: 'Caturra / Villa Sarchi',
-        processMethod: 'Honey (Yellow/Red/Black)',
-      },
-      roaster: roasterAntioquia._id,
-      roastProfile: 'Medium City+',
-      greenWeightKg: 130,
-      roastedWeightKg: 112,
-      availableKg: 112,
-      allocatedKg: 0,
-      pricePerKg: 29.5,
-      moistureContentPercent: 11.5,
-      densityGramsPerLiter: 708,
-      defectCount: 0,
-      scaScore: 86.0,
-      scaClassification: 'Excellent Specialty (85-89.99)',
-      cuppingScores: {
-        fragrance: 8.5,
-        flavor: 8.5,
-        aftertaste: 8.25,
-        acidity: 8.25,
-        body: 8.75,
-        balance: 8.5,
-        uniformity: 10.0,
-        cleanCup: 10.0,
-        sweetness: 10.0,
-        overall: 8.5,
-      },
-      flavorNotes: ['Roasted Hazelnut', 'Golden Honey', 'Milk Chocolate', 'Red Apple'],
-      certifications: ['Shade Grown', 'Micro-Mill Certified'],
-      story: '100% mucilage retained during slow parabolic greenhouse dehydration, concentrating fructose and full syrupy mouthfeel.',
-      qrHash: generateLotHash({ lotNumber: 'LOT-CRI-2026-057', scaScore: 86.0, origin: { country: 'Costa Rica' } }),
-      status: 'approved',
-    });
-
-    console.log('[Seed] Created 5 Specialty Batch Lots with full SCA breakdown.');
-
-    // 3. Create Cupping Sessions
-    await CuppingSession.create({
-      lot: lot1._id,
-      evaluator: qGrader._id,
-      sessionTitle: 'Specialty Q-Grader Baseline Certification',
-      waterTempCelsius: 93.5,
-      grindMicrons: 850,
-      fragrance: 9.0,
-      flavor: 9.0,
-      aftertaste: 8.75,
-      acidity: 9.0,
-      body: 8.5,
-      balance: 8.75,
-      uniformity: 10.0,
-      cleanCup: 10.0,
-      sweetness: 10.0,
-      overall: 8.75,
-      totalScore: 89.25,
-      classification: 'Excellent Specialty (85-89.99)',
-      tastingNotes: ['Wild Bergamot', 'Jasmine Flower', 'Ripe Apricot', 'Golden Honeycomb'],
-    });
-
-    await CuppingSession.create({
-      lot: lot2._id,
-      evaluator: qGrader._id,
-      sessionTitle: 'International Auction Calibration Cupping',
-      waterTempCelsius: 94.0,
-      grindMicrons: 840,
-      fragrance: 9.5,
-      flavor: 9.25,
-      aftertaste: 9.0,
-      acidity: 9.5,
-      body: 8.75,
-      balance: 9.0,
-      uniformity: 10.0,
-      cleanCup: 10.0,
-      sweetness: 10.0,
-      overall: 9.5,
-      totalScore: 92.5,
-      classification: 'Presidential Exemplar (90-100)',
-      tastingNotes: ['Champagne Mango', 'Candied Meyer Lemon', 'Orange Blossom', 'White Tea'],
-    });
-
-    console.log('[Seed] Created Certified Cupping Sessions.');
-
-    // 4. Create Orders across lifecycle
-    const ord1 = await Order.create({
-      orderNumber: generateOrderNumber(),
-      buyer: buyerGold._id,
-      roaster: roasterKaffa._id,
-      batchLot: lot1._id,
-      quantityKg: 35,
-      unitPricePerKg: lot1.pricePerKg,
-      subtotal: 35 * lot1.pricePerKg,
-      tierDiscountPercent: 10,
-      discountAmount: Math.round((35 * lot1.pricePerKg * 0.1) * 100) / 100,
-      totalAmount: Math.round((35 * lot1.pricePerKg * 0.9) * 100) / 100,
-      escrowStatus: 'dispatched',
-      shippingAddress: {
-        street: '820 NW 23rd Ave',
-        city: 'Portland',
-        state: 'OR',
-        postalCode: '97210',
-        country: 'USA',
-      },
-      trackingNumber: 'TRK-EXP-94021948',
-      qualityCertificateHash: lot1.qrHash,
-      milestones: [
-        { status: 'escrow_held', note: 'Escrow payment locked in smart contract ledger', timestamp: new Date(Date.now() - 4 * 86400000) },
-        { status: 'roasting_scheduled', note: 'Batch roast scheduled on Probat UG22 drum roaster', timestamp: new Date(Date.now() - 3 * 86400000) },
-        { status: 'cupping_verified', note: 'Batch sensory check passed with 89.25 SCA verified score', timestamp: new Date(Date.now() - 2 * 86400000) },
-        { status: 'dispatched', note: 'Degassed & vacuum nitrogen sealed, handed to DHL Express Air', timestamp: new Date(Date.now() - 1 * 86400000) },
-      ],
-    });
-
-    const ord2 = await Order.create({
-      orderNumber: generateOrderNumber(),
-      buyer: buyerSilver._id,
-      roaster: roasterKaffa._id,
-      batchLot: lot2._id,
-      quantityKg: 30,
-      unitPricePerKg: lot2.pricePerKg,
-      subtotal: 30 * lot2.pricePerKg,
-      tierDiscountPercent: 5,
-      discountAmount: Math.round((30 * lot2.pricePerKg * 0.05) * 100) / 100,
-      totalAmount: Math.round((30 * lot2.pricePerKg * 0.95) * 100) / 100,
-      escrowStatus: 'roasting_scheduled',
-      shippingAddress: {
-        street: '142 Haight St',
-        city: 'San Francisco',
+      phone: '+1 (555) 789-0123',
+      loyaltyPoints: 500,
+      address: {
+        street: '100 Golden Plaza',
+        city: 'Sunnyvale',
         state: 'CA',
-        postalCode: '94117',
-        country: 'USA',
+        postalCode: '94086',
       },
-      trackingNumber: 'TRK-EXP-11029384',
-      qualityCertificateHash: lot2.qrHash,
-      milestones: [
-        { status: 'escrow_held', note: 'Escrow deposit verified and confirmed', timestamp: new Date(Date.now() - 2 * 86400000) },
-        { status: 'roasting_scheduled', note: 'Profile calibration set to Nordic Filter protocol', timestamp: new Date(Date.now() - 1 * 86400000) },
-      ],
     });
 
-    const ord3 = await Order.create({
+    console.log('[Seed] Created Users: Customer, Head Baker, and Admin.');
+
+    // 2. Create Products
+    const productsData = [
+      // Breads
+      {
+        name: 'Country Sourdough Boule',
+        category: 'breads',
+        price: 8.5,
+        description: 'Naturally leavened 36-hour wild fermented loaf with a crisp blistered crust and custard-like crumb.',
+        ingredients: ['Organic Stoneground Wheat', 'Rye Starter', 'Filtered Water', 'Celtic Sea Salt'],
+        dailyStock: 25,
+        availableStock: 18,
+        dietaryTags: ['Vegan', 'Eggless', 'Nut-Free'],
+        imageEmoji: '🥖',
+        freshnessHours: 8,
+        bakeTime: '5:30 AM Daily',
+        isChefSpecial: true,
+        rating: 4.95,
+        reviewCount: 42,
+      },
+      {
+        name: 'Rosemary & Sea Salt Focaccia',
+        category: 'breads',
+        price: 7.0,
+        description: 'Fluffy Italian sheet bread drenched in cold-pressed extra virgin olive oil, fresh garden rosemary, and flaky Maldon salt.',
+        ingredients: ['Flour', 'Extra Virgin Olive Oil', 'Fresh Rosemary', 'Maldon Flake Salt'],
+        dailyStock: 15,
+        availableStock: 9,
+        dietaryTags: ['Vegan', 'Eggless', 'Nut-Free'],
+        imageEmoji: '🍞',
+        freshnessHours: 6,
+        bakeTime: '6:30 AM Daily',
+        isChefSpecial: false,
+        rating: 4.8,
+        reviewCount: 29,
+      },
+      {
+        name: 'Heritage Honey Seeded Loaf',
+        category: 'breads',
+        price: 9.0,
+        description: 'Nutrient-rich loaf packed with toasted flax, sunflower kernels, pumpkin seeds, and wildflower honey.',
+        ingredients: ['Whole Wheat Flour', 'Wildflower Honey', 'Flaxseed', 'Sunflower Seeds', 'Chia'],
+        dailyStock: 12,
+        availableStock: 5,
+        dietaryTags: ['Vegetarian', 'Eggless', 'Nut-Free'],
+        imageEmoji: '🌾',
+        freshnessHours: 8,
+        bakeTime: '5:45 AM Daily',
+        isChefSpecial: false,
+        rating: 4.88,
+        reviewCount: 21,
+      },
+
+      // Croissants & Pastries
+      {
+        name: 'Classic French Butter Croissant',
+        category: 'croissants_pastries',
+        price: 4.5,
+        description: '27 laminated micro-layers of cultured butter dough, baked to an ethereal honeycomb interior and flaky golden crust.',
+        ingredients: ['French High-Fat Butter (84%)', 'Unbleached Flour', 'Whole Milk', 'Cane Sugar'],
+        dailyStock: 35,
+        availableStock: 22,
+        dietaryTags: ['Vegetarian', 'Nut-Free'],
+        imageEmoji: '🥐',
+        freshnessHours: 4,
+        bakeTime: '6:00 AM & 11:00 AM',
+        isChefSpecial: true,
+        rating: 4.98,
+        reviewCount: 88,
+      },
+      {
+        name: 'Twice-Baked Almond Frangipane',
+        category: 'croissants_pastries',
+        price: 5.75,
+        description: 'Day-fresh croissant steeped in vanilla simple syrup, filled with rich almond frangipane cream, topped with toasted sliced almonds.',
+        ingredients: ['Croissant Pastry', 'Almond Flour', 'Bourbon Vanilla', 'Powdered Sugar'],
+        dailyStock: 18,
+        availableStock: 7,
+        dietaryTags: ['Vegetarian'],
+        imageEmoji: '🥐',
+        freshnessHours: 6,
+        bakeTime: '7:00 AM Daily',
+        isChefSpecial: false,
+        rating: 4.92,
+        reviewCount: 54,
+      },
+      {
+        name: 'Valrhona Chocolate Pain au Chocolat',
+        category: 'croissants_pastries',
+        price: 5.25,
+        description: 'Layered buttery pastry folded over two batons of 66% Valrhona French dark chocolate.',
+        ingredients: ['Butter Pastry', 'Valrhona Dark Chocolate Batons', 'Egg Wash', 'Sea Salt'],
+        dailyStock: 25,
+        availableStock: 14,
+        dietaryTags: ['Vegetarian', 'Nut-Free'],
+        imageEmoji: '🍫',
+        freshnessHours: 4,
+        bakeTime: '6:15 AM Daily',
+        isChefSpecial: false,
+        rating: 4.9,
+        reviewCount: 63,
+      },
+      {
+        name: 'Salted Caramel Pecan Cinnamon Swirl',
+        category: 'croissants_pastries',
+        price: 6.0,
+        description: 'Tender brioche roll spun with Korintje cinnamon brown sugar, drenched in warm house-made caramel and toasted pecans.',
+        ingredients: ['Enriched Brioche Dough', 'Cinnamon', 'Brown Sugar', 'Butter Caramel', 'Texas Pecans'],
+        dailyStock: 16,
+        availableStock: 4,
+        dietaryTags: ['Vegetarian'],
+        imageEmoji: '🍯',
+        freshnessHours: 5,
+        bakeTime: '7:30 AM Daily',
+        isChefSpecial: true,
+        rating: 4.96,
+        reviewCount: 47,
+      },
+
+      // Tarts & Cakes
+      {
+        name: 'Vanilla Bean Berry Tartlet',
+        category: 'tarts_cakes',
+        price: 7.5,
+        description: 'Crisp sweet butter sablé shell filled with silky Madagascar vanilla diplomat cream and fresh organic berries.',
+        ingredients: ['Sweet Almond Sablé Crust', 'Tahitian Vanilla Pods', 'Fresh Raspberries', 'Blueberries'],
+        dailyStock: 14,
+        availableStock: 8,
+        dietaryTags: ['Vegetarian'],
+        imageEmoji: '🥧',
+        freshnessHours: 8,
+        bakeTime: '8:00 AM Daily',
+        isChefSpecial: false,
+        rating: 4.87,
+        reviewCount: 31,
+      },
+      {
+        name: 'Dark Chocolate Ganache Gateau Slice',
+        category: 'tarts_cakes',
+        price: 8.0,
+        description: 'Flourless fudge sponge layered with 70% dark chocolate mousse and mirror glaze finish.',
+        ingredients: ['Belgian Cocoa', 'Heavy Cream', 'Espresso Powder', 'Bittersweet Chocolate'],
+        dailyStock: 12,
+        availableStock: 6,
+        dietaryTags: ['Vegetarian', 'Gluten-Free', 'Nut-Free'],
+        imageEmoji: '🍰',
+        freshnessHours: 12,
+        bakeTime: '8:30 AM Daily',
+        isChefSpecial: true,
+        rating: 4.94,
+        reviewCount: 39,
+      },
+
+      // Savory
+      {
+        name: 'Gruyère & Caramelized Onion Brioche',
+        category: 'savory_bakes',
+        price: 6.75,
+        description: 'Tender savory brioche stuffed with 8-hour slow caramelized shallots and molten aged Swiss Gruyère.',
+        ingredients: ['Brioche Dough', 'Gruyère AOC Cheese', 'Caramelized Sweet Onions', 'Thyme'],
+        dailyStock: 14,
+        availableStock: 9,
+        dietaryTags: ['Vegetarian', 'Nut-Free'],
+        imageEmoji: '🧀',
+        freshnessHours: 5,
+        bakeTime: '7:45 AM Daily',
+        isChefSpecial: false,
+        rating: 4.85,
+        reviewCount: 25,
+      },
+    ];
+
+    const products = await Product.create(productsData);
+    console.log(`[Seed] Created ${products.length} artisan bakery catalog items.`);
+
+    // 3. Create Sample Custom Cake
+    const cakeBreakdown = calculateCakePrice({
+      size: 'standard_6inch',
+      sponge: 'belgian_chocolate',
+      frosting: 'salted_caramel',
+      dietary: 'eggless',
+      customMessage: 'Happy 30th Birthday Emma!',
+    });
+
+    const sampleCake = await CustomCake.create({
+      customer: customer._id,
+      size: 'standard_6inch',
+      sponge: 'belgian_chocolate',
+      frosting: 'salted_caramel',
+      dietary: 'eggless',
+      customMessage: 'Happy 30th Birthday Emma!',
+      decorTheme: 'Gold Leaf & Toasted Honey Caramel Drip',
+      totalPrice: cakeBreakdown.totalPrice,
+      breakdown: cakeBreakdown,
+    });
+
+    // 4. Create Sample Orders across kitchen stages
+    // Order 1: Baking in Oven
+    await Order.create({
       orderNumber: generateOrderNumber(),
-      buyer: buyerGold._id,
-      roaster: roasterAntioquia._id,
-      batchLot: lot3._id,
-      quantityKg: 40,
-      unitPricePerKg: lot3.pricePerKg,
-      subtotal: 40 * lot3.pricePerKg,
-      tierDiscountPercent: 10,
-      discountAmount: Math.round((40 * lot3.pricePerKg * 0.1) * 100) / 100,
-      totalAmount: Math.round((40 * lot3.pricePerKg * 0.9) * 100) / 100,
-      escrowStatus: 'escrow_released',
-      shippingAddress: {
-        street: '820 NW 23rd Ave',
-        city: 'Portland',
-        state: 'OR',
-        postalCode: '97210',
-        country: 'USA',
-      },
-      trackingNumber: 'TRK-EXP-55910283',
-      qualityCertificateHash: lot3.qrHash,
+      customer: customer._id,
+      items: [
+        {
+          product: products[0]._id,
+          name: products[0].name,
+          price: products[0].price,
+          quantity: 2,
+          imageEmoji: products[0].imageEmoji,
+        },
+        {
+          product: products[3]._id,
+          name: products[3].name,
+          price: products[3].price,
+          quantity: 4,
+          imageEmoji: products[3].imageEmoji,
+        },
+      ],
+      subtotal: 8.5 * 2 + 4.5 * 4,
+      discountAmount: 0,
+      totalAmount: 35.0,
+      fulfillmentType: 'pickup',
+      scheduledSlot: 'Today: 2:00 PM Warm Oven Batch',
+      status: 'baking',
       milestones: [
-        { status: 'escrow_held', note: 'Escrow payment locked', timestamp: new Date(Date.now() - 7 * 86400000) },
-        { status: 'roasting_scheduled', note: 'Batch roast scheduled', timestamp: new Date(Date.now() - 6 * 86400000) },
-        { status: 'cupping_verified', note: 'Cupping verified at 87.0 SCA', timestamp: new Date(Date.now() - 5 * 86400000) },
-        { status: 'dispatched', note: 'Courier picked up package', timestamp: new Date(Date.now() - 4 * 86400000) },
-        { status: 'delivered', note: 'Signed for by Julian Sterling at cafe warehouse', timestamp: new Date(Date.now() - 2 * 86400000) },
-        { status: 'escrow_released', note: 'Buyer verified aroma & moisture, funds disbursed to Andean Craft', timestamp: new Date(Date.now() - 1 * 86400000) },
+        { status: 'placed', note: 'Order received at bakery counter', timestamp: new Date(Date.now() - 40 * 60000) },
+        { status: 'baking', note: 'Proofed loaves and croissants loaded into deck oven #2 at 220°C', timestamp: new Date(Date.now() - 15 * 60000) },
       ],
     });
 
-    console.log('[Seed] Created Orders in various stages (dispatched, roasting_scheduled, escrow_released).');
+    // Order 2: Decorating Custom Cake
+    await Order.create({
+      orderNumber: generateOrderNumber(),
+      customer: customer._id,
+      items: [
+        {
+          name: 'Custom 6-inch Celebration Cake',
+          price: sampleCake.totalPrice,
+          quantity: 1,
+          isCustomCake: true,
+          cakeDetails: {
+            sizeName: 'Standard Celebration (6-inch)',
+            spongeName: 'Rich Belgian Dark Chocolate',
+            frostingName: 'Salted Caramel Ganache',
+            customMessage: 'Happy 30th Birthday Emma!',
+            dietary: 'eggless',
+            decorTheme: 'Gold Leaf & Toasted Honey Caramel Drip',
+          },
+          imageEmoji: '🎂',
+        },
+      ],
+      subtotal: sampleCake.totalPrice,
+      discountAmount: 4.4,
+      couponApplied: 'GOLDEN10 (10% Off)',
+      totalAmount: Math.round((sampleCake.totalPrice - 4.4) * 100) / 100,
+      fulfillmentType: 'delivery',
+      scheduledSlot: 'Today: 4:30 PM Celebration Delivery',
+      deliveryAddress: customer.address,
+      status: 'decorating',
+      milestones: [
+        { status: 'placed', note: 'Custom cake design order confirmed', timestamp: new Date(Date.now() - 3 * 3600000) },
+        { status: 'baking', note: 'Eggless dark chocolate sponge baked & chilled', timestamp: new Date(Date.now() - 2 * 3600000) },
+        { status: 'decorating', note: 'Piping salted caramel ganache and edible gold leaf decor', timestamp: new Date(Date.now() - 20 * 60000) },
+      ],
+    });
 
-    // 5. Create Audit Logs
+    // Order 3: Ready for Pickup
+    await Order.create({
+      orderNumber: generateOrderNumber(),
+      customer: customer._id,
+      items: [
+        {
+          product: products[6]._id,
+          name: products[6].name,
+          price: products[6].price,
+          quantity: 2,
+          imageEmoji: products[6].imageEmoji,
+        },
+        {
+          product: products[7]._id,
+          name: products[7].name,
+          price: products[7].price,
+          quantity: 2,
+          imageEmoji: products[7].imageEmoji,
+        },
+      ],
+      subtotal: 6.0 * 2 + 7.5 * 2,
+      discountAmount: 2.0,
+      loyaltyPointsUsed: 20,
+      totalAmount: 25.0,
+      fulfillmentType: 'pickup',
+      scheduledSlot: 'Ready on Bakery Pickup Shelf',
+      status: 'ready',
+      milestones: [
+        { status: 'placed', note: 'Order placed online', timestamp: new Date(Date.now() - 90 * 60000) },
+        { status: 'baking', note: 'Baked fresh in morning batch', timestamp: new Date(Date.now() - 60 * 60000) },
+        { status: 'decorating', note: 'Glazed and boxed with golden ribbon', timestamp: new Date(Date.now() - 30 * 60000) },
+        { status: 'ready', note: 'Packaged on Shelf #4 ready for customer pickup', timestamp: new Date(Date.now() - 10 * 60000) },
+      ],
+    });
+
+    // 5. Audit Log
     await AuditLog.create({
-      action: 'PLATFORM_INITIALIZATION',
-      user: adminUser._id,
+      action: 'BAKERY_INITIALIZATION',
+      user: admin._id,
       entityType: 'System',
-      details: { environment: 'Production Ready', protocolVersion: 'SCA-2026-v2' },
-    });
-    await AuditLog.create({
-      action: 'LOT_REGISTERED',
-      user: roasterKaffa._id,
-      entityType: 'BatchLot',
-      entityId: lot1._id,
-      details: { lotNumber: lot1.lotNumber, initialScore: 89.25 },
-    });
-    await AuditLog.create({
-      action: 'ORDER_ESCROWED',
-      user: buyerGold._id,
-      entityType: 'Order',
-      entityId: ord1._id,
-      details: { orderNumber: ord1.orderNumber, amount: ord1.totalAmount },
+      details: { bakeryName: 'GoldenCrust Artisan Bakery', morningBakes: products.length },
     });
 
-    console.log('[Seed] Database populated successfully! Ready for demo.');
+    console.log('[Seed] Database seeded successfully! Ready for demonstration.');
     process.exit(0);
-  } catch (error) {
-    console.error('[Seed Error]', error);
+  } catch (err) {
+    console.error('[Seed Error]', err);
     process.exit(1);
   }
 };

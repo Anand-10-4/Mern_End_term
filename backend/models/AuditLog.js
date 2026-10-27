@@ -13,7 +13,7 @@ const auditLogSchema = new mongoose.Schema(
     },
     entityType: {
       type: String,
-      enum: ['BatchLot', 'CuppingSession', 'Order', 'User', 'System'],
+      enum: ['Product', 'Order', 'CustomCake', 'User', 'System'],
       required: true,
     },
     entityId: {
@@ -22,10 +22,6 @@ const auditLogSchema = new mongoose.Schema(
     details: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
-    },
-    ipAddress: {
-      type: String,
-      default: '127.0.0.1',
     },
   },
   { timestamps: true }

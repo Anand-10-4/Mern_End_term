@@ -18,7 +18,7 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET || 'amber_roast_specialty_secret_key_2026_jwt_token'
+      process.env.JWT_SECRET || 'goldencrust_artisan_bakery_secret_jwt_key_2026'
     );
     const user = await User.findById(decoded.id);
 

@@ -29,18 +29,19 @@ if (process.env.NODE_ENV !== 'test') {
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
-    system: 'AmberRoast OS Sensory Allocation Engine',
+    system: 'GoldenCrust Artisan Bakery Engine',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
+    version: '2.0.0',
     mongodb: 'connected',
   });
 });
 
 // Mount Routes
 app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/batches', require('./routes/batchRoutes'));
-app.use('/api/cuppings', require('./routes/cuppingRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/custom-cakes', require('./routes/customCakeRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
 // Error handling middlewares
@@ -54,7 +55,7 @@ const PORT = process.env.PORT || 5001;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`=======================================================`);
-    console.log(`[AmberRoast OS] Specialty Coffee Allocation Server`);
+    console.log(`[GoldenCrust Bakery] Artisan Oven & Kitchen Server`);
     console.log(`[Port] http://localhost:${PORT}`);
     console.log(`[Environment] ${process.env.NODE_ENV || 'development'}`);
     console.log(`=======================================================`);

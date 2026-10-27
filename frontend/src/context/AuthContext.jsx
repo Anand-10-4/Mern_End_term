@@ -5,20 +5,19 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('amber_token') || null);
+  const [token, setToken] = useState(localStorage.getItem('goldencrust_token') || null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize user profile on load
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem('amber_token');
+      const storedToken = localStorage.getItem('goldencrust_token');
       if (storedToken) {
         try {
           const res = await api.getMe();
           setUser(res.user);
         } catch (err) {
-          console.error('Session expired or invalid:', err.message);
-          localStorage.removeItem('amber_token');
+          console.error('Session expired:', err.message);
+          localStorage.removeItem('goldencrust_token');
           setToken(null);
           setUser(null);
         }
@@ -31,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const res = await api.login({ email, password });
-    localStorage.setItem('amber_token', res.token);
+    localStorage.setItem('goldencrust_token', res.token);
     setToken(res.token);
     setUser(res.user);
     return res;
@@ -39,14 +38,14 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     const res = await api.register(userData);
-    localStorage.setItem('amber_token', res.token);
+    localStorage.setItem('goldencrust_token', res.token);
     setToken(res.token);
     setUser(res.user);
     return res;
   };
 
   const logout = () => {
-    localStorage.removeItem('amber_token');
+    localStorage.removeItem('goldencrust_token');
     setToken(null);
     setUser(null);
   };
@@ -60,13 +59,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Quick 1-click role switcher for seamless evaluation
+  // Quick 1-click persona switcher for evaluators
   const switchDemoUser = async (roleKey) => {
     const demoAccounts = {
-      roaster: { email: 'roaster@amberroast.io', password: 'password123' },
-      buyer: { email: 'buyer@amberroast.io', password: 'password123' },
-      qgrader: { email: 'qgrader@amberroast.io', password: 'password123' },
-      admin: { email: 'admin@amberroast.io', password: 'password123' },
+      customer: { email: 'customer@goldencrust.com', password: 'password123' },
+      baker: { email: 'baker@goldencrust.com', password: 'password123' },
+      admin: { email: 'admin@goldencrust.com', password: 'password123' },
     };
 
     const target = demoAccounts[roleKey];

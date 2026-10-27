@@ -1,5 +1,5 @@
-# AmberRoast OS
-### Specialty Coffee Batch Allocation & Sensory Cupping Protocol Platform
+# GoldenCrust Bakery
+### Artisan Fresh Bakes & Custom Cake Studio Platform
 
 > **End-Term Software Engineering Project Submission**  
 > **Student Name**: Anand Mohan  
@@ -7,94 +7,91 @@
 
 ---
 
-## ☕ 1. Problem Statement
+## 🥐 1. Problem Statement
 
-Specialty coffee roasteries, estate farmers, and independent cafe collectives operate in a high-value, quality-critical market where green coffee lots fluctuate wildly based on sensory cupping scores. However, the current workflow suffers from major operational bottlenecks:
-1. **Manual & Unstandardized Cupping Sheets**: Sensory cupping assessments are often hand-written or siloed in spreadsheets, leading to inconsistent defect tracking, delayed score publications, and opaque quality assertions.
-2. **Allocation Allocation Spoilage & Hoarding**: Micro-lots often sell out in minutes, but buyers frequently hold uncommitted reservations, preventing roasters from locking real purchase orders and resulting in bean aging and moisture loss.
-3. **Escrow Trust Deficit**: Cafes hesitate to disburse upfront funds without verified pre-shipment cupping audits, while roasters cannot afford to roast and ship custom micro-lots without payment guarantees.
+Local bakeries and specialty cake studios face clear daily operational challenges:
+1. **Fresh Batch Spoilage & Uncertainty**: Daily bakes (croissants, sourdoughs, pastries) have short shelf-lives. Without real-time stock counters, customers face stock-outs while bakeries suffer food waste.
+2. **Complex Custom Cake Ordering**: Customers ordering custom cakes struggle with manual calls/forms to calculate pricing based on sizes, sponges, fillings, dietary restrictions, and custom messages.
+3. **Kitchen Bottlenecks & Order Tracking**: Customers have no visibility into whether their baked goods are in the oven, being decorated, or boxed and ready for counter pickup.
 
-AmberRoast OS solves this by unifying **sensory quality scoring (SCA 10-Attribute Protocol)**, **real-time 15-minute reservation locks**, and **multi-milestone B2B escrow contracts** with tamper-proof cryptographic lot certificates.
+GoldenCrust Bakery solves this with a **simple, intuitive, and complete software platform** providing daily batch tracking, an interactive custom cake builder with dynamic pricing, and a live 5-stage kitchen preparation pipeline.
 
 ---
 
 ## 👥 2. Target Users
 
-- **Artisan Micro-Roasters**: Ingest fresh green coffee, calibrate roast profiles (Nordic Filter, City+), track bean chemistry and moisture shrinkage loss, and sell reserved wholesale allocations.
-- **Certified Q-Graders**: Conduct official 10-attribute sensory evaluations, subtract defect penalties, and digitally verify specialty grade status.
-- **Wholesale Cafe Buyers**: Discover rare origin micro-lots, lock 15-minute reservation quotas, benefit from volume/tier discounts, and inspect verified flavor radar profiles.
-- **Estate Producers & Protocol Administrators**: Monitor global harvest distributions, manage multi-sig escrow settlements, and inspect immutable system audit logs.
+- **Bakery Customers**: Browse warm fresh daily bakes, design personalized celebration cakes, use promo coupons, redeem loyalty points, and track live order readiness.
+- **Head Bakers & Kitchen Staff**: Monitor incoming orders, move orders through the deck oven and decorating stages with one click, and catalog new recipes.
+- **Store Managers & Admins**: Monitor daily revenue, track sell-through percentage, and trigger morning restock routines.
 
 ---
 
-## 💡 3. Solution Overview
+## 🎨 3. Design & Color Palette
 
-AmberRoast OS replaces generic e-commerce with a purpose-built B2B allocation engine. Every micro-lot has a traceable origin story, chemical density, and verified SCA score. Orders are executed through an automated state machine escrow pipeline where buyer funds are held in vault until roasting is scheduled, sensory quality is re-verified, and courier delivery is confirmed.
-
----
-
-## 🎨 4. Design & Color Palette
-
-Designed around an artisan craft roastery and golden honey motif:
-- **Soft Cream Wax**: `#F9E6A8` (rgb 249, 230, 168)
-- **Vibrant Honey Amber**: `#F2A900` (rgb 242, 169, 0)
-- **Roasted Warm Amber**: `#CC6F00` (rgb 204, 111, 0)
-- **Deep Espresso Brown**: `#4D2A00` (rgb 77, 42, 0)
-- **Elevated Surfaces**: Deep charcoal-roast `#120A05`, `#1D1208`, glowing golden borders, and glassmorphism panels.
+Crafted with an artisan bakery warmth following the specified color scheme:
+- **Soft Cream / Vanilla**: `#F9E6A8` (rgb 249, 230, 168)
+- **Vibrant Honey Glaze / Gold**: `#F2A900` (rgb 242, 169, 0)
+- **Baked Warm Caramel**: `#CC6F00` (rgb 204, 111, 0)
+- **Dark Chocolate / Espresso**: `#4D2A00` (rgb 77, 42, 0)
+- **Surfaces**: Warm charcoal-oven black `#160B05`, `#1F1007`, elevated card panels, and glowing honey borders.
 
 ---
 
-## ⚡ 5. Core Engineering Workflows
+## ⚡ 4. Core Engineering Workflows
 
-### Workflow 1: Multi-Role Authentication & Allocation Quota Management
-- Secure JWT-based authentication with bcrypt password encryption.
-- Distinct roles: `roaster`, `buyer`, `qgrader`, and `admin`.
-- Tiered buyer quota limits (`Standard` 500 kg, `Silver` 1,000 kg, `Gold Reserve` 2,000 kg) with real-time usage tracking.
-- Pre-configured 1-click evaluator persona switcher in the navigation bar.
+### Workflow 1: Multi-Role Authentication & Customer Loyalty Rewards
+- Secure JWT-based authentication with bcrypt password hashing.
+- Three user roles: `customer`, `baker`, and `admin`.
+- Loyalty points rewards program: 50 points welcome credit, 1 point earned per $1 spent, 10 points = $1 checkout discount.
+- 1-click persona switcher in the header for instant demo evaluation.
 
-### Workflow 2: Official SCA 10-Attribute Sensory Cupping Protocol
-- Interactive Q-Grader scoring bench implementing the official Specialty Coffee Association formula:
-  $$\text{Total Score} = \sum_{i=1}^{10} \text{Attribute}_i - (\text{Defect Cups} \times \text{Defect Intensity})$$
-- Real-time SVG radar wheel visualization reacting dynamically to attribute sliders.
-- Automatic grade categorization:
-  - $\ge 90.00$: **Presidential Exemplar**
-  - $85.00 - 89.99$: **Excellent Specialty**
-  - $80.00 - 84.99$: **Specialty Grade**
-  - $< 80.00$: **Commercial / Sub-Specialty (Auto-drafted)**
-- Commits audit logs and instantly updates the lot's public certification.
+### Workflow 2: Daily Fresh Bakes & Inventory Management
+- Real-time catalog of artisan sourdoughs, croissants, tarts, and savory bakes.
+- Category filtering (`Breads`, `Croissants & Pastries`, `Tarts & Gateaux`, `Savory Bakes`).
+- Dietary tagging (`Vegetarian`, `Vegan`, `Eggless`, `Gluten-Free`, `Nut-Free`).
+- Automatic live stock decrement upon checkout and sold-out badges.
 
-### Workflow 3: Expiring Allocation Locks (15-Minute Reservation Countdown)
-- High-concurrency allocation lock mechanism.
-- Buyers can lock up to available kilograms for 15 minutes with a cryptographic reservation token.
-- Background and on-query automated cleanup cleans expired reservations and restores available inventory.
+### Workflow 3: Interactive Custom Cake Studio & Dynamic Pricing
+- Real-time cake customization engine:
+  - Cake Size selection: Mini 4" ($18), Standard 6" ($34), Grand 8" ($48), Two-Tier ($85).
+  - Sponge Flavors: Madagascar Vanilla, Belgian Chocolate, Red Velvet, Spiced Carrot.
+  - Frosting Flavors: Honey Buttercream, Salted Caramel Ganache, Dark Fudge, Chantilly.
+  - Dietary Surcharges: Eggless (+$3), Gluten-Free (+$5), Vegan (+$5).
+  - Piped Custom Message with visual canvas preview.
+- Dynamic price recalculation performed on every configuration change.
 
-### Workflow 4: Milestone-Backed B2B Escrow Pipeline
-- Full state machine transition logic:
-  $$\text{Escrow Held} \rightarrow \text{Roast Scheduled} \rightarrow \text{Cupping Verified} \rightarrow \text{Dispatched} \rightarrow \text{Delivered} \rightarrow \text{Escrow Released}$$
-- Role-based transition permissions preventing unauthorized lifecycle skips.
-- Generates downloadable/printable **Official Certificate of Authenticity** with SHA-256 digital seals and QR hashes.
+### Workflow 4: Cart, Checkout & Promotion Engine
+- Integrated shopping bag supporting mixed daily bakes and custom cakes.
+- Coupon discount engine (Code: `GOLDEN10` for 10% discount).
+- Loyalty points redemption option.
+- In-store counter pickup vs artisan courier delivery scheduling.
 
-### Workflow 5: Roastery Telemetry & Yield Analytics
-- Live roast shrinkage loss calculations:
-  $$\text{Shrinkage \%} = \frac{\text{Green Weight} - \text{Roasted Weight}}{\text{Green Weight}} \times 100$$
-- Origin distribution breakdown by country (Ethiopia, Panama, Colombia, Kenya, Costa Rica).
-- Real-time operational audit log stream tracking all system events.
+### Workflow 5: Live Kitchen Preparation Pipeline (State Machine)
+- 5-stage order progression:
+  $$\text{Order Received} \rightarrow \text{In Deck Oven} \rightarrow \text{Glazing \& Decor} \rightarrow \text{Ready for Pickup} \rightarrow \text{Completed}$$
+- Bakers advance orders along the pipeline with 1 click.
+- Customers and staff view milestone timestamps and real-time status bars.
+
+### Workflow 6: Bakery Operations Telemetry & Morning Restock
+- Daily revenue total, average order value, kitchen queue load, and batch sell-through percentage.
+- One-click morning batch restock action for bakery staff.
+- Operational audit log feed.
 
 ---
 
-## 🛠 6. Technology Stack
+## 🛠 5. Technology Stack
 
 | Layer | Technologies |
 |---|---|
 | **Frontend** | React 18, Vite 6, TailwindCSS 3, Lucide Icons, Canvas Confetti |
-| **Backend** | Node.js (v20+), Express.js 4, Express-Validator, Morgan |
+| **Backend** | Node.js, Express.js 4, Express-Validator, Morgan |
 | **Database** | MongoDB with Mongoose ODM |
-| **Security** | JSON Web Tokens (JWT), Bcrypt.js, CORS, Input Sanitization |
-| **Testing** | Native automated test runner (`npm test`) |
+| **Security** | JSON Web Tokens (JWT), Bcrypt.js, CORS |
+| **Testing** | Automated unit & integration test runner (`npm test`) |
 
 ---
 
-## 📁 7. Project Structure
+## 📁 6. Project Structure
 
 ```text
 Mern EndTerm/
@@ -102,68 +99,64 @@ Mern EndTerm/
 │   ├── config/
 │   │   └── db.js                        # Database connection setup
 │   ├── controllers/
-│   │   ├── authController.js            # Authentication & directory
-│   │   ├── batchController.js           # Lots, inventory & expiring locks
-│   │   ├── cuppingController.js         # SCA protocol scoring engine
-│   │   ├── orderController.js           # Escrow state machine & certificates
-│   │   └── analyticsController.js       # Yield & telemetry aggregator
+│   │   ├── authController.js            # Authentication & user profile
+│   │   ├── productController.js         # Daily bakes catalog & stock
+│   │   ├── customCakeController.js      # Cake pricing formula & builder
+│   │   ├── orderController.js           # Order placement & kitchen pipeline
+│   │   └── analyticsController.js       # Bakery sales & kitchen telemetry
 │   ├── middlewares/
 │   │   ├── authMiddleware.js            # JWT & role authorization
-│   │   ├── errorMiddleware.js           # Centralized error handler
-│   │   └── validateMiddleware.js        # Request parameter validation
+│   │   ├── errorMiddleware.js           # Error handling middleware
+│   │   └── validateMiddleware.js        # Request validator
 │   ├── models/
-│   │   ├── User.js                      # User schema with roles & quotas
-│   │   ├── BatchLot.js                  # Specialty batch lot with reservations
-│   │   ├── CuppingSession.js            # 10-attribute cupping record
-│   │   ├── Order.js                     # Escrow contract with milestone logs
-│   │   └── AuditLog.js                  # Global operational audit trail
+│   │   ├── User.js                      # User schema with roles & loyalty points
+│   │   ├── Product.js                   # Daily fresh bake schema
+│   │   ├── CustomCake.js                # Custom cake configuration schema
+│   │   ├── Order.js                     # Kitchen order schema with milestones
+│   │   └── AuditLog.js                  # Operational audit log
 │   ├── routes/
 │   │   ├── authRoutes.js                # /api/auth/*
-│   │   ├── batchRoutes.js               # /api/batches/*
-│   │   ├── cuppingRoutes.js             # /api/cuppings/*
+│   │   ├── productRoutes.js             # /api/products/*
+│   │   ├── customCakeRoutes.js          # /api/custom-cakes/*
 │   │   ├── orderRoutes.js               # /api/orders/*
 │   │   └── analyticsRoutes.js           # /api/analytics/*
 │   ├── scripts/
-│   │   └── seed.js                      # Realistic database seeder
+│   │   └── seed.js                      # Database seeder
 │   ├── test/
 │   │   └── api.test.js                  # Unit & integration test suite
 │   ├── utils/
-│   │   ├── scaCalculator.js             # SCA algorithm & shrinkage math
-│   │   └── tokenHelper.js               # JWT tokens & SHA256 hashes
+│   │   ├── cakePricing.js               # Cake pricing calculation formula
+│   │   └── tokenHelper.js               # JWT tokens & order numbers
 │   ├── .env                             # Backend environment variables
 │   ├── index.js                         # Express server entry point
 │   ├── package.json                     # Backend dependencies
 │   ├── README.md                        # Backend documentation
-│   └── AmberRoast_API_Collection.json   # Postman test collection
+│   └── GoldenCrust_API_Collection.json  # Postman test collection
 │
 ├── frontend/
 │   ├── dist/                            # Production build
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Navbar.jsx               # Navigation & 1-click persona switch
-│   │   │   ├── LotCard.jsx              # Micro-lot card with progress bar
-│   │   │   ├── CuppingRadar.jsx         # 10-attribute SVG radar wheel
-│   │   │   ├── ReservationModal.jsx     # 15-min lock & pricing calculator
-│   │   │   └── CertificateModal.jsx     # Printable Certificate of Authenticity
+│   │   │   ├── ProductCard.jsx          # Bake item card with stock badge
+│   │   │   └── CartModal.jsx            # Bag modal with checkout & coupons
 │   │   ├── context/
 │   │   │   ├── AuthContext.jsx          # Auth state & session switcher
-│   │   │   └── ToastContext.jsx         # Animated toast notification system
+│   │   │   └── ToastContext.jsx         # Animated toast notifications
 │   │   ├── pages/
-│   │   │   ├── Dashboard.jsx            # Executive telemetry dashboard
-│   │   │   ├── Marketplace.jsx          # Faceted search & allocation grid
-│   │   │   ├── BatchDetail.jsx          # Deep terroir & chemistry profile
-│   │   │   ├── CuppingLab.jsx           # Interactive SCA cupping bench
-│   │   │   ├── CreateLot.jsx            # Micro-lot registration form
-│   │   │   ├── OrdersEscrow.jsx         # Escrow milestone progression ledger
-│   │   │   ├── Analytics.jsx            # Roastery graphs & audit stream
+│   │   │   ├── BakeryMenu.jsx           # Fresh bakes with category filters
+│   │   │   ├── CustomCakeStudio.jsx     # Interactive custom cake studio
+│   │   │   ├── KitchenTracker.jsx       # 5-stage kitchen preparation tracker
+│   │   │   ├── AddBakeItem.jsx          # Form for baker to add bakes
+│   │   │   ├── BakeryAnalytics.jsx      # Telemetry, revenue & queue stats
 │   │   │   └── LoginRegister.jsx        # Login & registration view
 │   │   ├── services/
 │   │   │   └── api.js                   # REST API client
 │   │   ├── App.jsx                      # Main app shell & router
-│   │   ├── index.css                    # Tailwind & glassmorphism theme
+│   │   ├── index.css                    # Tailwind theme
 │   │   └── main.jsx                     # React root mount
 │   ├── .env                             # Frontend environment variables
-│   ├── index.html                       # HTML5 entry with Google Fonts
+│   ├── index.html                       # HTML5 entry
 │   ├── package.json                     # Frontend dependencies
 │   ├── postcss.config.js                # PostCSS configuration
 │   ├── tailwind.config.js               # Tailwind custom color theme
@@ -176,23 +169,18 @@ Mern EndTerm/
 
 ---
 
-## 🚀 8. Local Setup Instructions
+## 🚀 7. Local Setup Instructions
 
-### 1. Clone & Navigate
-```bash
-cd "Mern EndTerm"
-```
-
-### 2. Backend Setup
+### 1. Backend Setup
 ```bash
 cd backend
 npm install
-npm run seed       # Seeds realistic lots, buyers, roasters, cuppings & orders
-npm test           # Runs the automated test suite
+npm run seed       # Seeds bakery catalog, users, and orders
+npm test           # Runs test suite
 npm run dev        # Starts backend API on http://localhost:5001
 ```
 
-### 3. Frontend Setup
+### 2. Frontend Setup
 In a new terminal:
 ```bash
 cd frontend
@@ -203,33 +191,32 @@ Open **`http://localhost:5173`** in your browser.
 
 ---
 
-## 🔑 9. Demo Credentials & Quick Personas
+## 🔑 8. Demo Credentials & Quick Personas
 
 The top banner of the application includes a **1-click Persona Switcher**, or you can log in manually:
 
-| Persona | Email | Password | Role | Tier Quota |
+| Persona | Email | Password | Role | Features |
 |---|---|---|---|---|
-| **Wholesale Buyer** | `buyer@amberroast.io` | `password123` | `buyer` | Gold Reserve (1,500 kg) |
-| **Artisan Roaster** | `roaster@amberroast.io` | `password123` | `roaster` | Gold Reserve (3,000 kg) |
-| **Q-Grader CQI** | `qgrader@amberroast.io` | `password123` | `qgrader` | Certified Q-Grader #4092 |
-| **Director Admin** | `admin@amberroast.io` | `password123` | `admin` | Protocol Director |
+| **Customer** | `customer@goldencrust.com` | `password123` | `customer` | Order bakes, design custom cakes, loyalty points |
+| **Chef Baker** | `baker@goldencrust.com` | `password123` | `baker` | Manage deck ovens, advance kitchen orders, add bakes |
+| **Manager Admin** | `admin@goldencrust.com` | `password123` | `admin` | View revenue telemetry, morning restock, full access |
 
 ---
 
-## 📋 10. Submission Summary Form Fields
+## 📋 9. Submission Summary Form Fields
 
 ```text
-Project Name: AmberRoast OS - Specialty Batch Allocation & Sensory Cupping Protocol Platform
+Project Name: GoldenCrust Bakery - Artisan Fresh Bakes & Custom Cake Studio Platform
 Student Name: Anand Mohan
-Problem Statement: Fragmented quality grading, inventory hoarding, and escrow payment risks in specialty coffee micro-batch trade
+Problem Statement: Daily bakery inventory spoilage, opaque custom cake pricing, and lack of customer visibility into kitchen preparation stages
 GitHub Repository: [Your GitHub Repo Link]
 Deployed Application / Build: http://localhost:5173
 Demo Video: [Link to 3-5 Minute Demo Video]
 Tech Stack: MongoDB, Express.js, React 18, Node.js, TailwindCSS, Vite
 Major Features:
-1. SCA 10-Attribute Cupping Protocol Scoring Engine with Dynamic SVG Radar Wheel
-2. High-concurrency 15-minute expiring allocation reservation locks
-3. B2B Multi-milestone Escrow Pipeline (Escrow Held -> Roast Scheduled -> Cupping Verified -> Dispatched -> Delivered -> Released)
-4. Printable Digital Certificate of Authenticity with SHA-256 seal
-5. Roastery Telemetry & Roast Shrinkage Loss Ratio Analytics
+1. Daily fresh bake catalog with live stock tracking and dietary filters
+2. Interactive Custom Cake Studio with real-time dynamic pricing calculation
+3. Live 5-stage Kitchen Preparation Pipeline with milestone state transitions
+4. Cart with promotional coupon (GOLDEN10) and loyalty points redemption
+5. Bakery Operations Telemetry with daily sell-through and one-click morning restock
 ```

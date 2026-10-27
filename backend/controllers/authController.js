@@ -2,31 +2,34 @@ const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const { generateToken } = require('../utils/tokenHelper');
 
-// @desc    Register a new user
+// @desc    Register a new customer or staff member
 // @route   POST /api/auth/register
 // @access  Public
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, role, company, tier } = req.body;
+    const { name, email, password, role, phone, address } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: 'A user with this email address already exists in AmberRoast OS',
+        message: 'An account with this email address already exists at GoldenCrust',
       });
     }
-
-    const quotaKg = tier === 'Gold Reserve' ? 2000 : tier === 'Silver' ? 1000 : 500;
 
     const user = await User.create({
       name,
       email,
       password,
-      role: role || 'buyer',
-      company: company || 'Specialty Artisans Collective',
-      tier: tier || 'Standard',
-      allocationQuotaKg: quotaKg,
+      role: role || 'customer',
+      phone: phone || '+1 (555) 234-5678',
+      loyaltyPoints: 50, // Welcome gift: 50 points
+      address: address || {
+        street: '45 Artisan Way, Apt 3B',
+        city: 'Sunnyvale',
+        state: 'CA',
+        postalCode: '94086',
+      },
     });
 
     const token = generateToken(user._id, user.role);
@@ -36,12 +39,12 @@ const register = async (req, res, next) => {
       user: user._id,
       entityType: 'User',
       entityId: user._id,
-      details: { role: user.role, email: user.email, company: user.company },
+      details: { role: user.role, email: user.email },
     });
 
     res.status(201).json({
       success: true,
-      message: 'Account successfully registered on AmberRoast OS',
+      message: 'Account registered successfully! 50 Loyalty Points credited.',
       token,
       user,
     });
@@ -68,7 +71,7 @@ const login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials: No account associated with this email',
+        message: 'No account found with this email address',
       });
     }
 
@@ -92,7 +95,7 @@ const login = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: 'Authentication successful',
+      message: 'Welcome back to GoldenCrust Bakery!',
       token,
       user: user.toJSON(),
     });
@@ -121,15 +124,12 @@ const getMe = async (req, res, next) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, company, tier } = req.body;
+    const { name, phone, address } = req.body;
     const user = await User.findById(req.user.id);
 
     if (name) user.name = name;
-    if (company) user.company = company;
-    if (tier) {
-      user.tier = tier;
-      user.allocationQuotaKg = tier === 'Gold Reserve' ? 2000 : tier === 'Silver' ? 1000 : 500;
-    }
+    if (phone) user.phone = phone;
+    if (address) user.address = { ...user.address, ...address };
 
     await user.save();
 
@@ -143,26 +143,9 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-// @desc    Get all users (directory)
-// @route   GET /api/auth/users
-// @access  Private
-const getAllUsers = async (req, res, next) => {
-  try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 });
-    res.status(200).json({
-      success: true,
-      count: users.length,
-      users,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   register,
   login,
   getMe,
   updateProfile,
-  getAllUsers,
 };

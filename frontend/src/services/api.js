@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('amber_token');
+  const token = localStorage.getItem('goldencrust_token');
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -28,27 +28,31 @@ export const api = {
   login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
   register: (userData) => request('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   getMe: () => request('/auth/me'),
-  getUsers: () => request('/auth/users'),
+  updateProfile: (data) => request('/auth/profile', { method: 'PUT', body: JSON.stringify(data) }),
 
-  // Batches
-  getBatches: (params = '') => request(`/batches${params ? `?${params}` : ''}`),
-  getBatchById: (id) => request(`/batches/${id}`),
-  createBatch: (data) => request('/batches', { method: 'POST', body: JSON.stringify(data) }),
-  reserveBatch: (id, amountKg) => request(`/batches/${id}/reserve`, { method: 'POST', body: JSON.stringify({ amountKg }) }),
-  releaseReservation: (id, reservationToken) => request(`/batches/${id}/release-reservation`, { method: 'POST', body: JSON.stringify({ reservationToken }) }),
+  // Products (Daily Bakes)
+  getProducts: (params = '') => request(`/products${params ? `?${params}` : ''}`),
+  getProductById: (id) => request(`/products/${id}`),
+  createProduct: (data) => request('/products', { method: 'POST', body: JSON.stringify(data) }),
+  updateStock: (id, stockData) => request(`/products/${id}/stock`, { method: 'PATCH', body: JSON.stringify(stockData) }),
+  restockMorning: () => request('/products/morning-restock', { method: 'POST' }),
 
-  // Cupping Lab
-  getCuppings: () => request('/cuppings'),
-  getLotCuppingHistory: (lotId) => request(`/cuppings/lot/${lotId}`),
-  evaluateCupping: (data) => request('/cuppings', { method: 'POST', body: JSON.stringify(data) }),
+  // Custom Cake Studio
+  calculateCakePrice: (config) => request('/custom-cakes/calculate', { method: 'POST', body: JSON.stringify(config) }),
+  saveCustomCake: (data) => request('/custom-cakes', { method: 'POST', body: JSON.stringify(data) }),
 
-  // Orders & Escrow
+  // Orders & Kitchen Pipeline
   createOrder: (data) => request('/orders', { method: 'POST', body: JSON.stringify(data) }),
-  getMyOrders: () => request('/orders'),
+  getMyOrders: () => request('/orders/my-orders'),
+  getKitchenOrders: (status = '') => request(`/orders/kitchen${status ? `?status=${status}` : ''}`),
   getOrderById: (id) => request(`/orders/${id}`),
   updateOrderStatus: (id, status, note) => request(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, note }) }),
-  getCertificate: (id) => request(`/orders/certificate/${id}`),
 
-  // Analytics
+  // Analytics & Dashboard
   getDashboardAnalytics: () => request('/analytics/dashboard'),
+
+  // Razorpay Payment
+  getRazorpayConfig: () => request('/payment/config'),
+  createRazorpayOrder: (data) => request('/payment/create-order', { method: 'POST', body: JSON.stringify(data) }),
+  verifyPayment: (data) => request('/payment/verify', { method: 'POST', body: JSON.stringify(data) }),
 };

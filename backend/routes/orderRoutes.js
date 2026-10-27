@@ -3,39 +3,29 @@ const { body } = require('express-validator');
 const {
   createOrder,
   getMyOrders,
-  getOrderById,
+  getKitchenOrders,
   updateOrderStatus,
-  getCertificateData,
+  getOrderById,
 } = require('../controllers/orderController');
-const { protect } = require('../middlewares/authMiddleware');
+const { protect, authorize } = require('../middlewares/authMiddleware');
 const { validateRequest } = require('../middlewares/validateMiddleware');
 
 const router = express.Router();
 
-router.get('/certificate/:id', getCertificateData);
-
 router.use(protect);
-
-router.get('/', getMyOrders);
-router.get('/:id', getOrderById);
 
 router.post(
   '/',
   [
-    body('batchId').notEmpty().withMessage('Batch lot ID is required'),
-    body('quantityKg').isNumeric().withMessage('Quantity must be numeric'),
+    body('items').isArray({ min: 1 }).withMessage('Cart items must not be empty'),
     validateRequest,
   ],
   createOrder
 );
 
-router.patch(
-  '/:id/status',
-  [
-    body('status').notEmpty().withMessage('New status is required'),
-    validateRequest,
-  ],
-  updateOrderStatus
-);
+router.get('/my-orders', getMyOrders);
+router.get('/kitchen', authorize('baker', 'admin'), getKitchenOrders);
+router.get('/:id', getOrderById);
+router.patch('/:id/status', updateOrderStatus);
 
 module.exports = router;

@@ -1,5 +1,42 @@
 const mongoose = require('mongoose');
 
+const orderItemSchema = new mongoose.Schema({
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Product',
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+    min: 1,
+    default: 1,
+  },
+  imageEmoji: {
+    type: String,
+    default: '🥐',
+  },
+  isCustomCake: {
+    type: Boolean,
+    default: false,
+  },
+  cakeDetails: {
+    sizeName: String,
+    spongeName: String,
+    frostingName: String,
+    customMessage: String,
+    dietary: String,
+    decorTheme: String,
+  },
+});
+
 const orderMilestoneSchema = new mongoose.Schema({
   status: {
     type: String,
@@ -27,39 +64,25 @@ const orderSchema = new mongoose.Schema(
       unique: true,
       uppercase: true,
     },
-    buyer: {
+    customer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
-    roaster: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    batchLot: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'BatchLot',
-      required: true,
-    },
-    quantityKg: {
-      type: Number,
-      required: [true, 'Quantity in kg is required'],
-      min: [5, 'Minimum wholesale allocation order is 5 kg'],
-    },
-    unitPricePerKg: {
-      type: Number,
-      required: true,
-    },
+    items: [orderItemSchema],
     subtotal: {
       type: Number,
       required: true,
     },
-    tierDiscountPercent: {
+    discountAmount: {
       type: Number,
       default: 0,
     },
-    discountAmount: {
+    couponApplied: {
+      type: String,
+      default: '',
+    },
+    loyaltyPointsUsed: {
       type: Number,
       default: 0,
     },
@@ -67,35 +90,46 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    escrowStatus: {
+    fulfillmentType: {
       type: String,
-      enum: [
-        'escrow_held',
-        'roasting_scheduled',
-        'cupping_verified',
-        'dispatched',
-        'delivered',
-        'escrow_released',
-        'cancelled',
-      ],
-      default: 'escrow_held',
+      enum: ['pickup', 'delivery'],
+      default: 'pickup',
     },
-    shippingAddress: {
-      street: { type: String, default: 'Craft Roastery Row, Suite 400' },
-      city: { type: String, default: 'Portland' },
-      state: { type: String, default: 'OR' },
-      postalCode: { type: String, default: '97201' },
-      country: { type: String, default: 'USA' },
-    },
-    trackingNumber: {
+    scheduledSlot: {
       type: String,
-      default: function () {
-        return 'TRK-EXP-' + Math.floor(10000000 + Math.random() * 90000000);
-      },
+      default: 'Today: 2:00 PM - 3:00 PM (Warm Oven Batch)',
     },
-    qualityCertificateHash: {
+    deliveryAddress: {
+      street: { type: String, default: '45 Artisan Way, Apt 3B' },
+      city: { type: String, default: 'Sunnyvale' },
+      postalCode: { type: String, default: '94086' },
+      phone: { type: String, default: '+1 (555) 234-5678' },
+    },
+    status: {
       type: String,
-      required: true,
+      enum: ['placed', 'baking', 'decorating', 'ready', 'completed', 'cancelled'],
+      default: 'placed',
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'paid', 'failed'],
+      default: 'pending',
+    },
+    paymentMethod: {
+      type: String,
+      default: 'razorpay',
+    },
+    razorpayOrderId: {
+      type: String,
+      default: '',
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: '',
+    },
+    razorpaySignature: {
+      type: String,
+      default: '',
     },
     milestones: [orderMilestoneSchema],
   },

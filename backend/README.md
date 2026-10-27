@@ -1,17 +1,17 @@
-# AmberRoast OS - Backend API
+# GoldenCrust Bakery - Backend API
 
-AmberRoast OS is an enterprise-grade specialty coffee micro-batch allocation, sensory cupping protocol, and escrow contract platform built with Node.js, Express, and MongoDB.
+GoldenCrust is an artisan bakery platform and custom cake studio backend built with Node.js, Express, and MongoDB.
 
 ---
 
 ## 🛠 Tech Stack
 
-- **Runtime**: Node.js (v20+)
+- **Runtime**: Node.js
 - **Framework**: Express.js
 - **Database**: MongoDB with Mongoose ODM
-- **Authentication**: JWT (JSON Web Tokens) with bcryptjs password hashing
+- **Authentication**: JWT (JSON Web Tokens) with bcryptjs
 - **Validation**: Express-Validator
-- **Testing**: Native automated test suite covering SCA algorithms & Mongoose integration
+- **Testing**: Automated integration and unit test suite
 
 ---
 
@@ -22,76 +22,54 @@ backend/
 ├── config/
 │   └── db.js                      # MongoDB connection setup
 ├── controllers/
-│   ├── authController.js          # Authentication, user profiles & directory
-│   ├── batchController.js         # Batch registration, inventory & expiring reservations
-│   ├── cuppingController.js       # Official SCA 100-point cupping protocol evaluations
-│   ├── orderController.js         # Escrow contract lifecycle & quality certificates
-│   └── analyticsController.js     # Yield efficiency, roast loss & telemetry
+│   ├── authController.js          # Authentication, user profiles
+│   ├── productController.js       # Daily bakery catalog, inventory & restock
+│   ├── customCakeController.js    # Interactive custom cake pricing & builder
+│   ├── orderController.js         # Kitchen prep pipeline state machine & checkout
+│   └── analyticsController.js     # Bakery sales telemetry & kitchen queue KPIs
 ├── middlewares/
-│   ├── authMiddleware.js          # JWT verification & role-based authorization
-│   ├── errorMiddleware.js         # Centralized error handler & Mongoose error parser
-│   └── validateMiddleware.js      # Request schema validator
+│   ├── authMiddleware.js          # JWT verification & role authorization
+│   ├── errorMiddleware.js         # Centralized error handler
+│   └── validateMiddleware.js      # Request parameter validator
 ├── models/
-│   ├── User.js                    # User schema (Roasters, Buyers, Q-Graders, Admin)
-│   ├── BatchLot.js                # Specialty coffee lot with expiring reservation locks
-│   ├── CuppingSession.js          # 10-attribute SCA sensory evaluation schema
-│   ├── Order.js                   # B2B Escrow milestone contract schema
+│   ├── User.js                    # Customer, Baker, and Admin schema
+│   ├── Product.js                 # Fresh daily bakes with stock levels & dietary tags
+│   ├── CustomCake.js              # Personalized cake studio designs
+│   ├── Order.js                   # Kitchen orders with milestone state transitions
 │   └── AuditLog.js                # System-wide operational audit log
 ├── routes/
 │   ├── authRoutes.js              # /api/auth/*
-│   ├── batchRoutes.js             # /api/batches/*
-│   ├── cuppingRoutes.js           # /api/cuppings/*
+│   ├── productRoutes.js           # /api/products/*
+│   ├── customCakeRoutes.js        # /api/custom-cakes/*
 │   ├── orderRoutes.js             # /api/orders/*
 │   └── analyticsRoutes.js         # /api/analytics/*
 ├── scripts/
-│   └── seed.js                    # High-fidelity realistic dataset seeder
+│   └── seed.js                    # Realistic bakery catalog & user seeder
 ├── test/
-│   └── api.test.js                # Unit and integration test suite
+│   └── api.test.js                # Automated test runner
 ├── utils/
-│   ├── scaCalculator.js           # SCA 100-pt formula & roast shrinkage loss math
-│   └── tokenHelper.js             # JWT signer & SHA256 cryptographic lot hash
+│   ├── cakePricing.js             # Dynamic custom cake pricing formula
+│   └── tokenHelper.js             # JWT signer & order number generator
 ├── .env                           # Environment configuration
 ├── index.js                       # Express application entry point
 ├── package.json                   # Dependencies and scripts
-└── AmberRoast_API_Collection.json # Postman API test collection
+└── GoldenCrust_API_Collection.json# Postman API test collection
 ```
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Prerequisites
-Ensure MongoDB is running locally (`mongodb://127.0.0.1:27017`) or configure `MONGODB_URI` in `.env`.
-
-### 2. Install Dependencies
 ```bash
+# Install dependencies
 npm install
-```
 
-### 3. Seed Database
-Populates the database with realistic specialty coffee lots, certified cupping records, buyers, roasters, and active escrow orders:
-```bash
+# Seed sample data (Fresh bakes, Chef, Customer, Orders)
 npm run seed
-```
 
-### 4. Run Automated Tests
-```bash
+# Run automated tests
 npm test
-```
 
-### 5. Start Development Server
-```bash
+# Start backend server (Port 5001)
 npm run dev
-# Server will run at http://localhost:5001
 ```
-
----
-
-## 🔑 Pre-Seeded Demo Credentials
-
-| Role | Email | Password | Tier / Quota |
-|---|---|---|---|
-| **Artisan Roaster** | `roaster@amberroast.io` | `password123` | Gold Reserve (3,000 kg) |
-| **Wholesale Buyer** | `buyer@amberroast.io` | `password123` | Gold Reserve (1,500 kg) |
-| **Specialty Q-Grader** | `qgrader@amberroast.io` | `password123` | CQI Certified #4092 |
-| **System Admin** | `admin@amberroast.io` | `password123` | Protocol Director |

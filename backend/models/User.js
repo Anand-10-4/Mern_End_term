@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Please provide a full name'],
+      required: [true, 'Please provide your full name'],
       trim: true,
       maxlength: [60, 'Name cannot exceed 60 characters'],
     },
@@ -25,37 +25,23 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['roaster', 'buyer', 'qgrader', 'admin'],
-      default: 'buyer',
+      enum: ['customer', 'baker', 'admin'],
+      default: 'customer',
     },
-    company: {
+    phone: {
       type: String,
-      default: 'Independent Craft Laboratory',
-      trim: true,
+      default: '+1 (555) 234-5678',
     },
-    tier: {
-      type: String,
-      enum: ['Standard', 'Silver', 'Gold Reserve'],
-      default: 'Standard',
-    },
-    allocationQuotaKg: {
+    loyaltyPoints: {
       type: Number,
-      default: 500, // Monthly wholesale limit
+      default: 50, // 50 points welcome bonus ($5 value)
     },
-    usedQuotaKg: {
-      type: Number,
-      default: 0,
+    address: {
+      street: { type: String, default: '45 Artisan Way, Apt 3B' },
+      city: { type: String, default: 'Sunnyvale' },
+      state: { type: String, default: 'CA' },
+      postalCode: { type: String, default: '94086' },
     },
-    badgeNumber: {
-      type: String,
-      default: function() {
-        return 'AR-' + Math.floor(100000 + Math.random() * 900000);
-      }
-    },
-    isVerified: {
-      type: Boolean,
-      default: true,
-    }
   },
   { timestamps: true }
 );
@@ -73,7 +59,7 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Remove password from JSON representation
+// Remove password from JSON
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;

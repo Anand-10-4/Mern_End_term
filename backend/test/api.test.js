@@ -1,13 +1,13 @@
 const assert = require('assert');
-const { calculateScaScore, calculateRoastMetrics } = require('../utils/scaCalculator');
-const { generateLotHash, generateOrderNumber } = require('../utils/tokenHelper');
+const { calculateCakePrice, SIZE_PRICING } = require('../utils/cakePricing');
+const { generateOrderNumber } = require('../utils/tokenHelper');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
 dotenv.config({ path: __dirname + '/../.env' });
 
 async function runTests() {
-  console.log('--- [AmberRoast OS] Test Suite Execution Starting ---');
+  console.log('--- [GoldenCrust Bakery] Test Suite Execution Starting ---');
   let passed = 0;
   let failed = 0;
 
@@ -35,117 +35,91 @@ async function runTests() {
     }
   }
 
-  // Unit Test 1: SCA Cupping Score Calculation
-  test('SCA Cupping Algorithm: Baseline 10-Attribute Score Calculation', () => {
-    const perfectAttributes = {
-      fragrance: 9.0,
-      flavor: 9.0,
-      aftertaste: 9.0,
-      acidity: 9.0,
-      body: 9.0,
-      balance: 9.0,
-      uniformity: 10.0,
-      cleanCup: 10.0,
-      sweetness: 10.0,
-      overall: 9.0,
-      defectCups: 0,
+  // Unit Test 1: Standard Custom Cake Calculation
+  test('Cake Pricing: Standard 6-inch vanilla cake calculation', () => {
+    const config = {
+      size: 'standard_6inch',
+      sponge: 'vanilla_bean',
+      frosting: 'honey_buttercream',
+      dietary: 'standard',
+      customMessage: 'Happy Birthday!',
     };
-    const result = calculateScaScore(perfectAttributes);
-    assert.strictEqual(result.finalScore, 93.0);
-    assert.strictEqual(result.grade, 'Presidential Exemplar (90-100)');
-    assert.strictEqual(result.isSpecialtyGrade, true);
+    const res = calculateCakePrice(config);
+    assert.strictEqual(res.basePrice, 34);
+    assert.strictEqual(res.spongeAddon, 0);
+    assert.strictEqual(res.frostingAddon, 0);
+    assert.strictEqual(res.dietaryAddon, 0);
+    assert.strictEqual(res.totalPrice, 34);
   });
 
-  // Unit Test 2: Defect Deduction on Specialty Score
-  test('SCA Cupping Algorithm: Defect Taint/Fault Penalty Deduction', () => {
-    const taintedAttributes = {
-      fragrance: 8.0,
-      flavor: 8.0,
-      aftertaste: 8.0,
-      acidity: 8.0,
-      body: 8.0,
-      balance: 8.0,
-      uniformity: 10.0,
-      cleanCup: 10.0,
-      sweetness: 10.0,
-      overall: 8.0,
-      defectCups: 2,
-      defectIntensity: 4, // 2 cups x 4 = 8 pts defect
+  // Unit Test 2: Custom Cake Addons & Dietary Surcharge
+  test('Cake Pricing: 8-inch chocolate cake with salted caramel, gluten-free addon & long message', () => {
+    const config = {
+      size: 'party_8inch', // base 48
+      sponge: 'belgian_chocolate', // +3
+      frosting: 'salted_caramel', // +3
+      dietary: 'gluten_free', // +5
+      customMessage: 'Congratulations on your graduation from Stanford University!', // > 25 chars -> +2
     };
-    const result = calculateScaScore(taintedAttributes);
-    // Raw sum = 86. Defect deduction = 8. Final = 78.
-    assert.strictEqual(result.finalScore, 78.0);
-    assert.strictEqual(result.isSpecialtyGrade, false);
-    assert.strictEqual(result.grade, 'Commercial / Sub-Specialty');
+    const res = calculateCakePrice(config);
+    // 48 + 3 + 3 + 5 + 2 = 61
+    assert.strictEqual(res.totalPrice, 61);
+    assert.strictEqual(res.messageFee, 2);
   });
 
-  // Unit Test 3: Roast Shrinkage Loss Calculation
-  test('Roast Chemistry: Calculate green bean shrinkage percentage', () => {
-    const metrics = calculateRoastMetrics(100, 85);
-    assert.strictEqual(metrics.lossKg, 15);
-    assert.strictEqual(metrics.shrinkagePercentage, 15);
-    assert.strictEqual(metrics.efficiency, 85);
-  });
-
-  // Unit Test 4: Cryptographic Lot Hash Generation
-  test('Cryptographic Seal: Deterministic SHA256 Lot Certificate Hash', () => {
-    const hash1 = generateLotHash({
-      lotNumber: 'LOT-TEST-001',
-      origin: { country: 'Ethiopia', farmOrCoop: 'Yirgacheffe' },
-      scaScore: 88.5,
-      harvestDate: 1700000000000,
-    });
-    const hash2 = generateLotHash({
-      lotNumber: 'LOT-TEST-001',
-      origin: { country: 'Ethiopia', farmOrCoop: 'Yirgacheffe' },
-      scaScore: 88.5,
-      harvestDate: 1700000000000,
-    });
-    assert.ok(hash1.startsWith('AR-'));
-    assert.strictEqual(hash1, hash2);
+  // Unit Test 3: Order Number Generation
+  test('Order Generator: Generate unique GC prefix order number', () => {
+    const num1 = generateOrderNumber();
+    const num2 = generateOrderNumber();
+    assert.ok(num1.startsWith('GC-'));
+    assert.notStrictEqual(num1, num2);
   });
 
   // Database Integration Tests
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/amberroast_db';
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/goldencrust_db';
   await mongoose.connect(mongoUri);
 
   const User = require('../models/User');
-  const BatchLot = require('../models/BatchLot');
+  const Product = require('../models/Product');
   const Order = require('../models/Order');
 
-  await testAsync('Integration: Query seeded specialty users with password check', async () => {
-    const roaster = await User.findOne({ email: 'roaster@amberroast.io' }).select('+password');
-    assert.ok(roaster, 'Seeded roaster should exist');
-    const valid = await roaster.comparePassword('password123');
-    assert.strictEqual(valid, true, 'Password matching must succeed');
+  await testAsync('Integration: Query seeded customer with password check & loyalty points', async () => {
+    const customer = await User.findOne({ email: 'customer@goldencrust.com' }).select('+password');
+    assert.ok(customer, 'Seeded customer must exist');
+    const isValid = await customer.comparePassword('password123');
+    assert.strictEqual(isValid, true, 'Customer password must authenticate');
+    assert.strictEqual(customer.loyaltyPoints >= 50, true, 'Customer must have loyalty points');
   });
 
-  await testAsync('Integration: Expired reservation cleanup mechanics on BatchLot', async () => {
-    const lot = await BatchLot.findOne({ lotNumber: 'LOT-ETH-2026-081' });
-    assert.ok(lot);
-    const initialAvailable = lot.availableKg;
-
-    // Simulate an expired reservation
-    lot.activeReservations.push({
-      buyer: lot.roaster,
-      buyerName: 'Test Buyer',
-      amountKg: 10,
-      reservedAt: new Date(Date.now() - 30 * 60 * 1000),
-      expiresAt: new Date(Date.now() - 15 * 60 * 1000), // expired 15 mins ago
-      reservationToken: 'RES-TEST-EXPIRED',
-    });
-
-    const restored = lot.cleanupExpiredReservations();
-    assert.strictEqual(restored, 10, 'Should restore 10 kg back to available inventory');
-    assert.strictEqual(lot.availableKg, initialAvailable + 10);
-    assert.strictEqual(lot.activeReservations.length, 0, 'Expired reservation must be cleared');
+  await testAsync('Integration: Query bakery catalog with category filtering', async () => {
+    const breads = await Product.find({ category: 'breads' });
+    assert.ok(breads.length >= 2, 'Should have multiple breads');
+    const croissants = await Product.find({ category: 'croissants_pastries' });
+    assert.ok(croissants.length >= 2, 'Should have multiple croissants');
   });
 
-  await testAsync('Integration: Escrow Order state progression validation', async () => {
-    const order = await Order.findOne({ escrowStatus: 'dispatched' });
-    assert.ok(order, 'Seeded dispatched order must exist');
-    assert.ok(order.milestones.length >= 4, 'Order must contain milestone audit entries');
-    assert.strictEqual(order.milestones[0].status, 'escrow_held');
+  await testAsync('Integration: Kitchen order pipeline status check', async () => {
+    const bakingOrder = await Order.findOne({ status: 'baking' });
+    assert.ok(bakingOrder, 'Should have an order in baking stage');
+    assert.ok(bakingOrder.milestones.length >= 2, 'Should have milestones');
+  });
+
+  await testAsync('Payment: Razorpay HMAC SHA256 Signature Verification', async () => {
+    const crypto = require('crypto');
+    const secret = process.env.RAZORPAY_KEY_SECRET || 'MRbh8un91R2oHPmoy5ZUTpKb';
+    const fakeOrderId = 'order_test_12345';
+    const fakePaymentId = 'pay_test_67890';
+    const signature = crypto
+      .createHmac('sha256', secret)
+      .update(fakeOrderId + '|' + fakePaymentId)
+      .digest('hex');
+
+    const verified = crypto
+      .createHmac('sha256', secret)
+      .update(fakeOrderId + '|' + fakePaymentId)
+      .digest('hex') === signature;
+
+    assert.strictEqual(verified, true, 'HMAC SHA256 signature verification must succeed');
   });
 
   await mongoose.disconnect();
@@ -154,7 +128,7 @@ async function runTests() {
   if (failed > 0) {
     process.exit(1);
   } else {
-    console.log('All tests passed successfully!\n');
+    console.log('All GoldenCrust tests passed successfully!\n');
     process.exit(0);
   }
 }

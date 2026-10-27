@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "AmberRoast OS API Collection",
-    "description": "Complete REST API collection for AmberRoast OS - Specialty Coffee Batch Allocation & Sensory Cupping Protocol Platform",
+    "name": "GoldenCrust Bakery API Collection",
+    "description": "Complete REST API collection for GoldenCrust Artisan Bakery & Custom Cake Studio",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -20,13 +20,13 @@
       }
     },
     {
-      "name": "Auth - Login Roaster",
+      "name": "Auth - Login Customer",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"roaster@amberroast.io\",\n  \"password\": \"password123\"\n}"
+          "raw": "{\n  \"email\": \"customer@goldencrust.com\",\n  \"password\": \"password123\"\n}"
         },
         "url": {
           "raw": "http://localhost:5001/api/auth/login",
@@ -38,60 +38,40 @@
       }
     },
     {
-      "name": "Auth - Login Buyer",
-      "request": {
-        "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"buyer@amberroast.io\",\n  \"password\": \"password123\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5001/api/auth/login",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5001",
-          "path": ["api", "auth", "login"]
-        }
-      }
-    },
-    {
-      "name": "Batches - Get All Lots",
+      "name": "Products - Get All Daily Bakes",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:5001/api/batches",
+          "raw": "http://localhost:5001/api/products?category=croissants_pastries",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5001",
-          "path": ["api", "batches"]
+          "path": ["api", "products"],
+          "query": [{ "key": "category", "value": "croissants_pastries" }]
         }
       }
     },
     {
-      "name": "Batches - Reserve 25kg Allocation",
+      "name": "Custom Cake - Dynamic Price Calculation",
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"amountKg\": 25\n}"
+          "raw": "{\n  \"size\": \"standard_6inch\",\n  \"sponge\": \"belgian_chocolate\",\n  \"frosting\": \"salted_caramel\",\n  \"dietary\": \"eggless\",\n  \"customMessage\": \"Happy Birthday Sarah!\"\n}"
         },
         "url": {
-          "raw": "http://localhost:5001/api/batches/{{BATCH_ID}}/reserve",
+          "raw": "http://localhost:5001/api/custom-cakes/calculate",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5001",
-          "path": ["api", "batches", "{{BATCH_ID}}", "reserve"]
+          "path": ["api", "custom-cakes", "calculate"]
         }
       }
     },
     {
-      "name": "Cupping - Submit SCA 10-Attribute Evaluation",
+      "name": "Orders - Place Order with Coupon & Loyalty Points",
       "request": {
         "method": "POST",
         "header": [
@@ -100,28 +80,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"lotId\": \"{{BATCH_ID}}\",\n  \"fragrance\": 8.75,\n  \"flavor\": 9.0,\n  \"aftertaste\": 8.75,\n  \"acidity\": 9.25,\n  \"body\": 8.5,\n  \"balance\": 8.75,\n  \"uniformity\": 10,\n  \"cleanCup\": 10,\n  \"sweetness\": 10,\n  \"overall\": 8.75,\n  \"tastingNotes\": [\"Bergamot\", \"Blackcurrant\", \"Orange Blossom\"]\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5001/api/cuppings",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5001",
-          "path": ["api", "cuppings"]
-        }
-      }
-    },
-    {
-      "name": "Orders - Lock Escrow Contract",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"batchId\": \"{{BATCH_ID}}\",\n  \"quantityKg\": 20\n}"
+          "raw": "{\n  \"items\": [\n    {\n      \"name\": \"Classic French Butter Croissant\",\n      \"price\": 4.5,\n      \"quantity\": 2\n    }\n  ],\n  \"fulfillmentType\": \"pickup\",\n  \"couponCode\": \"GOLDEN10\",\n  \"useLoyaltyPoints\": true\n}"
         },
         "url": {
           "raw": "http://localhost:5001/api/orders",
@@ -133,7 +92,28 @@
       }
     },
     {
-      "name": "Analytics - Executive Telemetry Dashboard",
+      "name": "Kitchen - Advance Order Pipeline",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"decorating\",\n  \"note\": \"Freshly pulled from deck oven, cooling on baker rack\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5001/api/orders/{{ORDER_ID}}/status",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["api", "orders", "{{ORDER_ID}}", "status"]
+        }
+      }
+    },
+    {
+      "name": "Analytics - Bakery Telemetry",
       "request": {
         "method": "GET",
         "header": [],

@@ -1,7 +1,7 @@
 {
-  "name": "amberroast-backend",
+  "name": "goldencrust-backend",
   "version": "1.0.0",
-  "description": "AmberRoast OS - Specialty Coffee Batch Allocation & Sensory Cupping Protocol Platform Backend",
+  "description": "GoldenCrust Bakery — Artisan Oven & Custom Cake Studio Backend API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,9 +10,9 @@
     "test": "node test/api.test.js"
   },
   "keywords": [
-    "specialty-coffee",
-    "sca-cupping",
-    "allocation-platform",
+    "artisan-bakery",
+    "custom-cakes",
+    "kitchen-tracker",
     "mern-stack",
     "express",
     "mongodb"
@@ -27,6 +27,7 @@
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "razorpay": "^2.9.8"
   }
 }
